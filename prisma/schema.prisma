@@ -1,10 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
@@ -12,33 +9,144 @@ datasource db {
   provider = "postgresql"
 }
 
-model User{
-  id            BigInt        @id @default(autoincrement())
-  username      String        @unique
-  password      String        
-  role          Role          @default(USER)
-  userBalance   BigInt        @default(0)
-  lockedBalance BigInt        @default(0)
-
-  markets       Market[]
-}
-
-enum Role{
+enum Role {
   USER
   ADMIN
-}
-
-model Market {
-  id            BigInt        @id @default(autoincrement())
-  title         String
-  creatorId     BigInt
-  totalIssued   BigInt        @default(0)
-  resolution    Resolution?
-
-  creator       User          @relation(fields: [creatorId],references: [id])
 }
 
 enum Resolution {
   YES
   NO
+}
+
+enum StockType {
+  YES
+  NO
+}
+
+enum TradeType {
+  BUY
+  SELL
+}
+
+model User {
+  id                BigInt         @id @default(autoincrement())
+  username          String         @unique
+  password          String
+  role              Role           @default(USER)
+  available_balance BigInt         @default(0)
+  reserved_balance  BigInt         @default(0)
+  markets           Market[]
+  stockBalances     StockBalance[]
+  bids              Bid[]
+  asks              Ask[]
+  fills             Fill[]
+  txLogs            TxLog[]
+
+  @@index([id])
+  @@map("users")
+}
+
+model Market {
+  id          BigInt      @id @default(autoincrement())
+  creatorId   BigInt
+  title       String
+  totalIssued BigInt      @default(0)
+  resolution  Resolution?
+
+  creator       User           @relation(fields: [creatorId], references: [id])
+  orderbooks    Orderbook[]
+  stockBalances StockBalance[]
+
+  @@map("markets")
+}
+
+model Orderbook {
+  id       BigInt    @id @default(autoincrement())
+  marketId BigInt
+  type     StockType
+
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  bids   Bid[]
+  asks   Ask[]
+  fills  Fill[]
+
+  // Ensures only one YES and one NO orderbook can exist per market
+  @@unique([marketId, type])
+  @@map("orderbook")
+}
+
+model StockBalance {
+  id       BigInt    @id @default(autoincrement())
+  userId   BigInt
+  marketId BigInt
+  type     StockType
+  qty      BigInt    @default(0)
+  locked   BigInt    @default(0)
+
+  user   User   @relation(fields: [userId], references: [id])
+  market Market @relation(fields: [marketId], references: [id])
+
+  // Ensures a user only has one balance row per stock type (YES/NO) in a market
+  @@unique([userId, marketId, type])
+  @@map("stockBalance")
+}
+
+model Bid {
+  id          BigInt    @id @default(autoincrement())
+  orderbookId BigInt
+  price       BigInt
+  qty         BigInt
+  userId      BigInt
+  stockType   StockType
+
+  orderbook Orderbook @relation(fields: [orderbookId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+
+  // Speeds up finding the highest bid price during order matching
+  @@index([orderbookId, price(sort: Desc)])
+  @@map("bids")
+}
+
+model Ask {
+  id          BigInt    @id @default(autoincrement())
+  orderbookId BigInt
+  price       BigInt
+  qty         BigInt
+  userId      BigInt
+  stockType   StockType
+
+  orderbook Orderbook @relation(fields: [orderbookId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+
+  // Speeds up finding the lowest ask price during order matching
+  @@index([orderbookId, price(sort: Asc)])
+  @@map("asks")
+}
+
+model Fill {
+  id          BigInt    @id @default(autoincrement())
+  orderbookId BigInt
+  price       BigInt
+  qty         BigInt
+  type        TradeType
+  isMaker     Boolean
+  userId      BigInt
+
+  orderbook Orderbook @relation(fields: [orderbookId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@map("fills")
+}
+
+model TxLog {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt
+  amount    BigInt
+  type      String // e.g., "DEPOSIT", "WITHDRAW", "MINT", "MERGE", "PAYOUT"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("tx_log")
 }
