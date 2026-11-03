@@ -5,7 +5,6 @@ import UserRepo from "../db/repository/user.repo";
 import { handleError, handleReponse } from "../utils";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { success } from "zod";
 
 export const signup = async (req: Request, res: Response) => {
     try {
@@ -37,7 +36,7 @@ export const signup = async (req: Request, res: Response) => {
     } catch (error) {
         console.log(error);
         if (error instanceof Error) {
-            return res.status(500).send(handleError(error.message, 0));
+            return res.status(401).send(handleError(error.message, 0));
         } else {
             return res
                 .status(500)
