@@ -1,7 +1,7 @@
 const handleReponse = (message: string, status: number, data?: any) => {
     return {
         message,
-        status: 1,
+        status: status|| 1,
         data: data || null,
     };
 };
