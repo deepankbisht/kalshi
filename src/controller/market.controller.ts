@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import { prisma } from "../db/client";
-import { handleError } from "../utils";
-import { success } from "zod";
+import { handleError, handleReponse } from "../utils";
+import { bigint, success } from "zod";
+import MarketRepo from "../db/repository/market.repo";
 
 export const increaseBalance = async (req: Request, res: Response) => {
     try {
@@ -43,3 +44,22 @@ export const increaseBalance = async (req: Request, res: Response) => {
         }
     }
 };
+
+export const market = async (req:Request,res:Response)=>{
+    try {
+        if(!req.userId){
+            return res.status(400).json(handleError("userId invalid",0));
+        }
+        const userId = BigInt(req.userId);
+        const {title} = req.body;
+        const marketCreate = await MarketRepo.createMarket(userId,title);
+        if(!marketCreate){
+            return res.status(400).json(handleError("market not created",0))
+        }
+
+        return res.status(200).json(handleReponse("market created",1,marketCreate));
+        
+    } catch (error) {
+        return res.status(500).json(handleError("server error",0))
+    }
+}
