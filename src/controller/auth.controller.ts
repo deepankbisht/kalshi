@@ -11,10 +11,11 @@ export const signup = async (req: Request, res: Response) => {
         const response = userSchema.safeParse(req.body);
 
         if (!response.success) {
-            throw new Error("Incorrect request schema");
+            return res.status(400).json({
+                success: false,
+                message: response.error.message,
+            });
         }
-
-        
         const { username, password } = response.data;
 
         const exist = await UserRepo.getUser(username);
@@ -22,25 +23,24 @@ export const signup = async (req: Request, res: Response) => {
         if (exist) {
             return res
                 .status(403)
-                .send(handleError("Username already exist", 0));
+                .json(handleError("Username already exist", 0));
         }
 
         const hashedPassword = await bcrypt.hash(
             password,
             Number(env.SALTROUND)
         );
+
         await UserRepo.userCreate(username, hashedPassword);
-        return res
-            .status(200)
-            .send(handleReponse("signup done", 1));
+        return res.status(200).json(handleReponse("signup done", 1));
     } catch (error) {
         console.log(error);
         if (error instanceof Error) {
-            return res.status(401).send(handleError(error.message, 0));
+            return res.status(500).json(handleError(error.message, 0));
         } else {
             return res
                 .status(500)
-                .send(
+                .json(
                     handleError(
                         "Server Error. Failed to process request /signup",
                         0
@@ -55,7 +55,10 @@ export const signin = async (req: Request, res: Response) => {
         const response = userSchema.safeParse(req.body);
 
         if (!response.success) {
-            throw new Error("Incorrect Schema");
+            return res.status(400).json({
+                success: false,
+                message: "Invalid schema",
+            });
         }
 
         const { username, password } = response.data;
@@ -63,21 +66,22 @@ export const signin = async (req: Request, res: Response) => {
         const exist = await UserRepo.getUser(username);
 
         if (!exist) {
-            return res.status(403).send(handleError("User don't exist", 0));
+            return res.status(403).json(handleError("User don't exist", 0));
         }
 
         const check = await bcrypt.compare(password, exist.password);
 
-        if (check) {
-            const token = jwt.sign({ userId: exist.id.toString() }, env.JWT_URL!);
-            return res.status(200).json({
-                success: true,
-                token: token,
-            });
+        if (!check) {
+            return res.status(403).send(handleError("Invalid password", 0));
         }
+
+        const token = jwt.sign({ userId: exist.id.toString() }, env.JWT_URL!);
+        return res.status(200).json({
+            success: true,
+            token: token,
+        });
     } catch (error) {
         console.log(error);
-
         if (error instanceof Error) {
             return res.status(500).send(handleError(error.message, 0));
         } else {
