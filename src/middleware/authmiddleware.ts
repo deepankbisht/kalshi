@@ -2,6 +2,7 @@ import { type NextFunction, type Request, type Response } from "express";
 import { env } from "bun";
 import jwt from "jsonwebtoken";
 import { handleError } from "../utils";
+import { success } from "zod";
 
 export const authMiddleware = async (
     req: Request,
@@ -11,11 +12,11 @@ export const authMiddleware = async (
     try {
         const authHeader = req.headers.token as string;
         if (typeof authHeader !== "string") {
-            throw new Error("header is not string");
+            return res.status(400).json(handleError("header is not string",0));
         }
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            throw new Error("Error with token middleware");
+            return res.status(400).json(handleError("Error with token middleware",0));
         }
 
         const token = authHeader.split(" ")[1] as string;
@@ -25,13 +26,15 @@ export const authMiddleware = async (
             typeof response === "string" ||
             typeof response.userId !== "string"
         ) {
-            throw new Error("error with jwt");
+            return res
+                .status(400)
+                .json(handleError( "error with jwt", 0));
         }
         req.userId = response.userId;
         next();
     } catch (error) {
         if (error instanceof Error) {
-            return res.status(401).send(handleError(error.message, 0));
+            return res.status(401).json(handleError( error.message, 0));
         } else {
             return res
                 .status(500)
