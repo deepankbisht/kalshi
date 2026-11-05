@@ -38,7 +38,7 @@ export const authMiddleware = async (
         } else {
             return res
                 .status(500)
-                .send(handleError("Server error in middleware", 0));
+                .json(handleError("Server error in middleware", 0));
         }
     }
 };
