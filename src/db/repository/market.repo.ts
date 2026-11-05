@@ -1,7 +1,6 @@
-import { bigint } from "zod";
 import { prisma } from "../client";
 
-const MarketRepo = {
+export const MarketRepo = {
     createMarket: async (userId:bigint,title:string) => {
         return await prisma.market.create({
             data:{
@@ -12,5 +11,14 @@ const MarketRepo = {
     },
 };
 
-
-export default MarketRepo;
+export const getMarket = async(marketId:bigint)=>{
+    return await prisma.market.findUnique({
+        where:{
+            id: marketId
+        },
+        select:{
+            title: true,
+            totalIssued: true
+        }
+    })
+}
