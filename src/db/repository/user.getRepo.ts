@@ -7,7 +7,8 @@ export const getUser = async(userId:bigint)=>{
         },
         select:{
             username: true,
-            available_balance:true
+            available_balance:true,
+            reserved_balance:true
         }
     })
 }

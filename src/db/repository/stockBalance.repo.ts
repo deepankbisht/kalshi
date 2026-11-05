@@ -1,0 +1,58 @@
+import { prisma } from "../client"
+
+export const checkUserStockBalance = async (userId:bigint,marketId:bigint,type:"YES"|"NO")=>{
+    return await prisma.stockBalance.findUnique({
+        where:{
+            userId_marketId_type:{
+                userId,
+                marketId,
+                type : type
+            }
+        }
+    })
+}
+
+export const createUserStockBalance = async (userId:bigint,marketId:bigint,type:"YES"|"NO",qty:bigint)=>{
+    return await prisma.stockBalance.create({
+        data:{
+            userId:userId,
+            marketId:marketId,
+            qty:qty,
+            type:type
+        }
+    })
+}
+
+export const splitUserStockBalance = async (id:bigint,amount:bigint)=>{
+    return await prisma.stockBalance.update({
+        where:{
+            id:id
+        },
+        data:{
+            qty:{
+                increment:amount
+            }
+        },
+        select:{
+            qty:true,
+            type: true
+        }
+    })
+}
+
+export const mergeUserStockBalance = async (id:bigint,amount:bigint)=>{
+    return await prisma.stockBalance.update({
+        where:{
+            id:id
+        },
+        data:{
+            qty:{
+                decrement:amount
+            }
+        },
+        select:{
+            qty:true,
+            type: true
+        }
+    })
+}

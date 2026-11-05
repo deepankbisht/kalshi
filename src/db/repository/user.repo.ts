@@ -1,6 +1,6 @@
 import { prisma } from "../client.ts";
 
-const UserRepo = {
+export const UserRepo = {
     getUser: async (username: string) => {
         return await prisma.user.findFirst({
             where: {
@@ -18,4 +18,12 @@ const UserRepo = {
     },
 };
 
-export default UserRepo;
+export const tx_log = async(userId:bigint,amount:bigint,type:string)=>{
+    return await prisma.txLog.create({
+        data:{
+            userId:userId,
+            amount: amount,
+            type:type
+        }
+    })
+}
