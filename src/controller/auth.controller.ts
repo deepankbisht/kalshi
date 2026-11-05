@@ -1,7 +1,7 @@
 import { env } from "bun";
 import type { Request, Response } from "express";
 import { userSchema } from "../zod/auth.type";
-import UserRepo from "../db/repository/user.repo";
+import {UserRepo} from "../db/repository/user.repo";
 import { handleError, handleReponse } from "../utils";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
