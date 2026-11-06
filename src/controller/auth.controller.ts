@@ -1,10 +1,11 @@
 import { env } from "bun";
 import type { Request, Response } from "express";
 import { userSchema } from "../zod/auth.type";
-import {UserRepo} from "../db/repository/user.repo";
 import { handleError, handleReponse } from "../utils";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import UserRepo from "../db/repository/user.repo";
+
 
 export const signup = async (req: Request, res: Response) => {
     try {
