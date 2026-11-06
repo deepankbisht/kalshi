@@ -10,16 +10,15 @@ const MarketRepo = {
             }
         })
     },
-    splitMarket: async (marketId:bigint) => {
+    splitMarket: async (marketId:bigint,stock:bigint) => {
         return await prisma.market.update({
             where: {
                 id:marketId
             },
             data:{
-                
-            },
-            select:{
-
+                totalIssued:{
+                    increment:stock
+                }
             }
         })
     },
@@ -28,12 +27,37 @@ const MarketRepo = {
             where:{
                 id: marketId
             },
-            select:{
-                title: true,
-                totalIssued: true
+        })
+    },
+    mergeMarket: async (marketId:bigint,stock:bigint) => {
+        return await prisma.market.update({
+            where: {
+                id:marketId
+            },
+            data:{
+                totalIssued:{
+                    decrement:stock
+                }
             }
         })
+    },
+    updateMarket : async (userId:bigint,bet:bigint)=>{
+        return await prisma.user.update({
+            where: {
+                id: (userId),
+            },
+            data: {
+                available_balance: {
+                    decrement: (bet),
+                },
+            },
+            select: {
+                username: true,
+                available_balance: true,
+            },
+        })
     }
+
 };
 
 export default MarketRepo;

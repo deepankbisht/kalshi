@@ -33,10 +33,6 @@ export const splitUserStockBalance = async (id:bigint,amount:bigint)=>{
                 increment:amount
             }
         },
-        select:{
-            qty:true,
-            type: true
-        }
     })
 }
 
@@ -50,9 +46,5 @@ export const mergeUserStockBalance = async (id:bigint,amount:bigint)=>{
                 decrement:amount
             }
         },
-        select:{
-            qty:true,
-            type: true
-        }
     })
 }

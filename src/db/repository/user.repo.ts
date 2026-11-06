@@ -1,12 +1,31 @@
 import { prisma } from "../client.ts";
 
-export const UserRepo = {
+const UserRepo = {
     getUser: async (username: string) => {
-        return await prisma.user.findFirst({
+        return await prisma.user.findUnique({
             where: {
                 username,
             },
         });
+    },
+    getUserViaUserId: async (userId: bigint) => {
+        return await prisma.user.findUnique({
+            where: {
+                id:userId,
+            },
+        });
+    },
+    increase: async (userId:bigint)=>{
+        return await prisma.user.update({
+            where: {
+                id:userId
+            },
+            data:{
+                available_balance:{
+                    increment: 50
+                }
+            }
+        })
     },
     userCreate: async (username:string,password:string) => {
         return await prisma.user.create({
@@ -16,14 +35,17 @@ export const UserRepo = {
             },
         });
     },
-};
-
-export const tx_log = async(userId:bigint,amount:bigint,type:string)=>{
-    return await prisma.txLog.create({
-        data:{
-            userId:userId,
-            amount: amount,
-            type:type
-        }
-    })
+    updatedBalance : async (userId:bigint,bet:bigint) => {
+        return await prisma.user.update({
+            where: {
+                id: (userId),
+            },
+            data: {
+                available_balance: {
+                    increment: (bet*100n),
+                },
+            },
+        })
+    }   
 }
+export default UserRepo
