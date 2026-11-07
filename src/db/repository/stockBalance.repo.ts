@@ -48,3 +48,20 @@ export const mergeUserStockBalance = async (id:bigint,amount:bigint)=>{
         },
     })
 }
+
+export const askUserStockBalance = async (userId:bigint,marketId:bigint,type:"YES"|"NO",amount:bigint)=>{
+    return await prisma.stockBalance.update({
+        where:{
+            userId_marketId_type:{
+                userId: userId,
+                marketId : marketId,
+                type : type
+            }
+        },
+        data:{
+            qty:{
+                decrement:amount
+            }
+        },
+    })
+}

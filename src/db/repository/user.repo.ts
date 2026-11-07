@@ -46,6 +46,21 @@ const UserRepo = {
                 },
             },
         })
-    }   
+    },
+    updateMarket : async (userId:bigint,bet:bigint)=>{
+        return await prisma.user.update({
+            where: {
+                id: (userId),
+            },
+            data: {
+                available_balance: {
+                    decrement: (bet),
+                },
+            },
+        })
+    },
+    changeBalance: async(userId:bigint, amount:bigint)=>{
+
+    },
 }
 export default UserRepo

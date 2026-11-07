@@ -41,23 +41,6 @@ const MarketRepo = {
             }
         })
     },
-    updateMarket : async (userId:bigint,bet:bigint)=>{
-        return await prisma.user.update({
-            where: {
-                id: (userId),
-            },
-            data: {
-                available_balance: {
-                    decrement: (bet),
-                },
-            },
-            select: {
-                username: true,
-                available_balance: true,
-            },
-        })
-    }
-
 };
 
 export default MarketRepo;
