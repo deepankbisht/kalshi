@@ -108,7 +108,7 @@ export const splitBid = async (req: Request, res: Response) => {
             });
         }
 
-        const updatedMarket = await MarketRepo.updateMarket(userId, bet);
+        const updatedMarket = await UserRepo.updateMarket(userId, bet);
 
         const userExistYES = await checkUserStockBalance(
             userId,
