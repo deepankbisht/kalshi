@@ -10,6 +10,7 @@ import {
 } from "../db/repository/stockBalance.repo";
 import tx_log from "../db/repository/tx_repo";
 import UserRepo from "../db/repository/user.repo";
+import { success } from "zod";
 
 export const increaseBalance = async (req: Request, res: Response) => {
     try {
@@ -79,10 +80,18 @@ export const splitBid = async (req: Request, res: Response) => {
         }
 
         const existUser = await UserRepo.getUserViaUserId(userId);
-        const existMarket = await MarketRepo.getMarket(BigInt(marketId));
-
         if (!existUser) {
             return res.status(400).json(handleError("invalid user", 0));
+        }
+
+        const existMarket = await MarketRepo.getMarket(BigInt(marketId));
+
+        if(!existMarket){
+            return res.status(400).json(handleError("market is not created",0))
+        }
+
+        if(existMarket.resolution!== null){
+            return res.status(400).json(handleError("resolution is already executed",0))   
         }
 
         const bet = BigInt(req.body.bet);
@@ -180,15 +189,20 @@ export const mergeBid = async (req: Request, res: Response) => {
         if (!userId) {
             return res.status(400).json(handleError("userId invalid", 0));
         }
+
+        const checkMarketId = await MarketRepo.getMarket(marketID);
+        if(!checkMarketId){
+            return res.status(400).json(handleError("market is not created",0))
+        }
+
+        if(checkMarketId.resolution!== null){
+            return res.status(400).json(handleError("resolution is already executed",0))   
+        }
+
         const existUser = await UserRepo.getUserViaUserId(userId);
-        const existMarket = await MarketRepo.getMarket(marketID);
 
         if (!existUser) {
             return res.status(400).json(handleError("invalid user", 0));
-        }
-
-        if (!existMarket) {
-            return res.status(400).json(handleError("invalid market", 0));
         }
 
         const bet = BigInt(req.body.bet);
@@ -212,7 +226,7 @@ export const mergeBid = async (req: Request, res: Response) => {
                 .json(handleError("user don't exist of type NO", 0));
         }
 
-        if (userExistYES.qty < bet && userExistNO.qty < bet) {
+        if (userExistYES.qty < bet || userExistNO.qty < bet) {
             return res.status(400).json({
                 success: false,
                 message: "not enough YES or NO",
@@ -221,24 +235,45 @@ export const mergeBid = async (req: Request, res: Response) => {
             });
         }
 
-        if(existMarket.totalIssued<=0 || existMarket.totalIssued < bet){
+        if(checkMarketId.totalIssued<=0 || checkMarketId.totalIssued < bet){
             return res.status(400).json(handleError("you can't merge more that market",0))
         }
         
-        await tx_log.tx_history(userId, bet*100n, "merge");
         const user = await UserRepo.updatedBalance(userId, bet);
+        const market = await MarketRepo.mergeMarket(marketID,bet);
         const stockYES = await mergeUserStockBalance(userExistYES.id,bet);
         const stockNO = await mergeUserStockBalance(userExistNO.id,bet);
+        await tx_log.tx_history(userId, bet*100n, "merge");
 
         return res.status(200).json({
             success: true,
             username: user.username,
             balance: String(user.available_balance),
             YES_left: String(stockYES.qty),
-            NO_left : String(stockNO.qty)
+            NO_left : String(stockNO.qty),
+            total_Market_Stock: String(market.totalIssued)
         });
     } catch (error) {
         console.log(error);
         return res.status(500).json(handleError("Server Error", 0));
     }
 };
+
+
+export const getMarket = async (req:Request,res:Response)=>{
+    try {
+        const market = await MarketRepo.getMarketMany();
+        if(!market){
+            return res.status(400).json(handleError("no market created",0))
+        }
+
+        return res.status(200).json({
+            success: true,
+            market : market
+        })
+    } catch (error) {
+        console.log("get market error :   ",error);
+        
+        return res.status(500).json(handleError("Server Error",0))
+    }
+}
