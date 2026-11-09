@@ -36,13 +36,14 @@ model User {
   role              Role           @default(USER)
   available_balance BigInt         @default(0)
   reserved_balance  BigInt         @default(0)
-  
+
   markets           Market[]
   stockBalances     StockBalance[]
   bids              Bid[]
   asks              Ask[]
-  fills             Fill[]
   txLogs            TxLog[]
+  makerFills        Fill[]         @relation("MakerFills")
+  takerFills        Fill[]         @relation("TakerFills")
 
   @@index([id])
   @@map("users")
@@ -105,7 +106,7 @@ model Bid {
   user      User      @relation(fields: [userId], references: [id])
 
   // Speeds up finding the highest bid price during order matching
-  @@index([orderbookId, price(sort: Desc)])
+  @@index([orderbookId, price(sort: Asc)])
   @@map("bids")
 }
 
@@ -130,12 +131,13 @@ model Fill {
   orderbookId BigInt
   price       BigInt
   qty         BigInt
-  type        TradeType
-  isMaker     Boolean
-  userId      BigInt
+  type        String
+  makerId     BigInt
+  takerId     BigInt
 
-  orderbook Orderbook @relation(fields: [orderbookId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
+  orderbook   Orderbook @relation(fields: [orderbookId], references: [id])
+  taker       User      @relation("TakerFills" ,fields: [takerId], references: [id])
+  maker       User      @relation("MakerFills",fields: [makerId],references: [id])
 
   @@map("fills")
 }

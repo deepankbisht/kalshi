@@ -84,9 +84,9 @@ CREATE TABLE "fills" (
     "orderbookId" BIGINT NOT NULL,
     "price" BIGINT NOT NULL,
     "qty" BIGINT NOT NULL,
-    "type" "TradeType" NOT NULL,
-    "isMaker" BOOLEAN NOT NULL,
-    "userId" BIGINT NOT NULL,
+    "type" TEXT NOT NULL,
+    "makerId" BIGINT NOT NULL,
+    "takerId" BIGINT NOT NULL,
 
     CONSTRAINT "fills_pkey" PRIMARY KEY ("id")
 );
@@ -106,13 +106,16 @@ CREATE TABLE "tx_log" (
 CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 
 -- CreateIndex
+CREATE INDEX "users_id_idx" ON "users"("id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "orderbook_marketId_type_key" ON "orderbook"("marketId", "type");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "stockBalance_userId_marketId_type_key" ON "stockBalance"("userId", "marketId", "type");
 
 -- CreateIndex
-CREATE INDEX "bids_orderbookId_price_idx" ON "bids"("orderbookId", "price" DESC);
+CREATE INDEX "bids_orderbookId_price_idx" ON "bids"("orderbookId", "price" ASC);
 
 -- CreateIndex
 CREATE INDEX "asks_orderbookId_price_idx" ON "asks"("orderbookId", "price" ASC);
@@ -145,7 +148,10 @@ ALTER TABLE "asks" ADD CONSTRAINT "asks_userId_fkey" FOREIGN KEY ("userId") REFE
 ALTER TABLE "fills" ADD CONSTRAINT "fills_orderbookId_fkey" FOREIGN KEY ("orderbookId") REFERENCES "orderbook"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "fills" ADD CONSTRAINT "fills_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "fills" ADD CONSTRAINT "fills_takerId_fkey" FOREIGN KEY ("takerId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fills" ADD CONSTRAINT "fills_makerId_fkey" FOREIGN KEY ("makerId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "tx_log" ADD CONSTRAINT "tx_log_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
