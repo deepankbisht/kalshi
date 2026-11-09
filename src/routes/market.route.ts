@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    getMarket,
     increaseBalance,
     market,
     mergeBid,
@@ -13,5 +14,6 @@ marketRouter.post("/onramp", authMiddleware, increaseBalance);
 marketRouter.post("/market", authMiddleware, market);
 marketRouter.post("/split/:marketId", authMiddleware, splitBid);
 marketRouter.post("/merge/:marketId", authMiddleware, mergeBid);
+marketRouter.get("/market", authMiddleware, getMarket);
 
 export default marketRouter;
