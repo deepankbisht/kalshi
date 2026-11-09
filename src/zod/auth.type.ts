@@ -8,3 +8,9 @@ export const userSchema = z.object({
 export const betSchema = z.object({
     bet : z.coerce.bigint()
 })
+
+export const resolveSchema = z.object({
+    resolve : z.enum(["YES","NO"],{
+        message:"Outcome must be either 'YES' or 'NO'"
+    }),
+})
