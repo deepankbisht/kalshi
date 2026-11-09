@@ -59,8 +59,71 @@ const UserRepo = {
             },
         })
     },
-    changeBalance: async(userId:bigint, amount:bigint)=>{
-
+    increaseBalance: async(userId:bigint, amount:bigint)=>{
+        return await prisma.user.update({
+            where: {
+                id: (userId),
+            },
+            data: {
+                available_balance: {
+                    increment: (amount),
+                },
+            },
+        })
+    },
+    decreaseBalance: async(userId:bigint, amount:bigint)=>{
+        return await prisma.user.update({
+            where: {
+                id: (userId),
+            },
+            data: {
+                available_balance: {
+                    decrement: (amount),
+                },
+            },
+        })
+    },
+    lockBalance:async(id:bigint,amount:bigint)=>{
+        return await prisma.user.update({
+            where:{
+                id,
+            },
+            data:{
+                available_balance:{
+                    decrement:amount
+                },
+                reserved_balance:{
+                    increment:amount
+                }
+            }
+        })
+    },
+    unlockBalance:async(id:bigint,amount:bigint)=>{
+        return await prisma.user.update({
+            where:{
+                id,
+            },
+            data:{
+                available_balance:{
+                    increment:amount
+                },
+                reserved_balance:{
+                    decrement:amount
+                }
+            }
+        })
+    },
+    decreaseReservedBalance: async(userId:bigint, amount:bigint)=>{
+        return await prisma.user.update({
+            where: {
+                id: (userId),
+            },
+            data: {
+                reserved_balance: {
+                    decrement: (amount),
+                },
+            },
+        })
     },
 }
 export default UserRepo

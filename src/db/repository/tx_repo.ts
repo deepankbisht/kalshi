@@ -9,6 +9,20 @@ const tx_log = {
                 type  : type
             }
         })
+    },
+    get_tx:async (userId:bigint)=>{
+        return await prisma.txLog.findMany({
+            where:{
+                userId
+            },
+            select:{
+                amount:true,
+                type: true,
+            },
+            orderBy:{
+                createdAt:"desc"
+            }
+        })
     }
 }
 

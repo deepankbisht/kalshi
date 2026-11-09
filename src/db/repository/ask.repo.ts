@@ -10,11 +10,14 @@ export const getAsk = async(orderbookId:bigint,type:"YES"|"NO",price:bigint)=>{
             price:{
                 lte:price
             }
+        },
+        orderBy:{
+            price: "asc"
         }
     })
 }
 
-export const createAsk = async(orderbookId:bigint,price:bigint,qty:bigint,userId:bigint ,type:"YES"|"NO")=>{
+export const createASK = async(orderbookId:bigint,price:bigint,qty:bigint,userId:bigint ,type:"YES"|"NO")=>{
     return await prisma.ask.create({
         data:{
             orderbookId:orderbookId,
@@ -34,15 +37,36 @@ export const deleteAsk = async(id:bigint)=>{
     })
 }
 
+export const deleteAskMany = async(id:bigint[])=>{
+    return await prisma.ask.deleteMany({
+        where:{
+            orderbookId:{
+                in:id
+            }
+        },
+    })
+}
+
 export const updateAsk = async(id:bigint,qty:bigint)=>{
     return await prisma.ask.update({
         where:{
             id:id
         },
         data:{
-            qty:{
-                decrement:qty
-            }
+            qty:qty
         }
+    })
+}
+
+export const getAskMany = async(orderbookId:bigint[])=>{
+    return await prisma.ask.findMany({
+        where:{
+            orderbookId:{
+                in:orderbookId,
+            },
+            qty:{
+                gt:0n
+            }
+        },
     })
 }

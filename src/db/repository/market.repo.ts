@@ -1,4 +1,3 @@
-import { id } from "zod/locales";
 import { prisma } from "../client";
 
 const MarketRepo = {
@@ -7,6 +6,20 @@ const MarketRepo = {
             data:{
                 creatorId: userId,
                 title : title
+            }
+        })
+    },
+    getMarketMany: async () => {
+        return await prisma.market.findMany({
+            where:{
+                resolution:null
+            },
+            select:{
+                id:true,
+                title:true,
+            },
+            orderBy:{
+                id:"desc"
             }
         })
     },
@@ -41,6 +54,16 @@ const MarketRepo = {
             }
         })
     },
+    resolve:async(marketId:bigint,finalResolve:"YES"|"NO")=>{
+        return await prisma.market.update({
+            where:{
+                id:marketId
+            },
+            data:{
+                resolution:finalResolve
+            }
+        })
+    }
 };
 
 export default MarketRepo;
